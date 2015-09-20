@@ -1,0 +1,70 @@
+<ion-view view-title="Settings">
+  <ion-content>
+    <div class="list list-inset">
+
+      <div class="item item-divider">Tracking</div>
+
+      <div class="item item-toggle">
+        Enabled
+        <label class="toggle toggle-positive">
+          <input type="checkbox" ng-model="settings.tracking">
+          <div class="track">
+          <div class="handle"></div>
+        </div>
+        </label>
+      </div>
+
+      <label class="item item-input item-stacked-label">
+        <span class="input-label">Server URL</span>
+        <input type="url" placeholder="settings.serverUrl" ng-model="settings.serverUrl">
+      </label>
+
+      <label class="item item-input item-stacked-label">
+        <span class="input-label">Sample interval in seconds</span>
+
+          <div class="item range">
+            <i class="icon ion-android-remove"></i>
+            <input type="range" ng-model="settings.interval" min="settings.intervalMin" max="settings.intervalMax">
+            <i class="icon ion-android-add"></i>
+          </div>
+        </label>
+
+        </div>
+      <div class="list list-inset">
+
+
+      <div class="item item-divider">Map</div>
+
+      <div class="item item-toggle">
+        Show polyline
+        <label class="toggle toggle-positive">
+          <input type="checkbox" ng-model="settings.polyline">
+          <div class="track">
+          <div class="handle"></div>
+        </div>
+        </label>
+      </div>
+
+      <div class="item item-toggle">
+        Show start/stop markers
+        <label class="toggle toggle-positive">
+          <input type="checkbox" ng-model="settings.startStopMarkers">
+          <div class="track">
+          <div class="handle"></div>
+        </div>
+        </label>
+      </div>
+
+      <div class="item item-toggle">
+        Center map on location
+        <label class="toggle toggle-positive">
+          <input type="checkbox" ng-model="settings.keepOnCenter">
+          <div class="track">
+          <div class="handle"></div>
+        </div>
+        </label>
+      </div>
+
+    </div>
+  </ion-content>
+</ion-view>

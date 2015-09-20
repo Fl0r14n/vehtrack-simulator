@@ -1,0 +1,10 @@
+<ion-view class="logs" view-title="Logs">
+  <ion-content>
+    <ul class="list">
+      <li class="item" ng-repeat="message in ctrl.getLogs()">{{message}}</li>
+    </ul>
+  </ion-content>
+  <div class="bar bar-footer bar-balanced">
+      <button class="button-log button button-block title" ng-click="ctrl.clear()">Clear</button>
+  </div>
+</ion-view>

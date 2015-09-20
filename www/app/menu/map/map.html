@@ -1,0 +1,39 @@
+<ion-view view-title="Map">
+    <ion-content>
+        <div class="button-bar">
+            <a class="button icon-center" ng-class="{'button-assertive ion-record': !ctrl.isRecording, 'button-energized ion-pause': ctrl.isRecording}" ng-click="ctrl.startRecord()"></a>
+            <a class="button button-dark icon-center ion-stop" ng-click="ctrl.stopRecord()"></a>
+        </div>
+
+        <ui-gmap-google-map center="ctrl.map.center"
+                            pan="ctrl.map.pan"
+                            zoom="ctrl.map.zoom"
+                            options="ctrl.map.options">
+
+            <data-ui-gmap-layer namespace="weather" type="WeatherLayer" show="ctrl.weather"></data-ui-gmap-layer>
+
+            <ui-gmap-polylines models="ctrl.polylines" path="'path'"
+                               stroke="'stroke'"
+                               visible="visible"
+                               geodesic="'geodesic'"
+                               fit="'false'"
+                               editable="'editable'"
+                               draggable="'draggable'"
+                               icons="'icons'"></ui-gmap-polylines>
+
+            <ui-gmap-markers doCluster="true" models="ctrl.markers" coords="'coords'" icon="'icon'" options="'options'" click="onClick">
+                <ui-gmap-windows show="show">
+                    <div ng-non-bindable>{{title}}</div>
+                </ui-gmap-windows>
+            </ui-gmap-markers>
+
+            <ui-gmap-marker ng-if="ctrl.currentPosition"
+                    coords="ctrl.currentPosition.coords"
+                    options="ctrl.currentPosition.options"
+                    events="ctrl.currentPosition.events"
+                    idkey="ctrl.currentPosition.id">
+            </ui-gmap-marker>
+
+        </ui-gmap-google-map>
+    </ion-content>
+</ion-view>
