@@ -1,8 +1,13 @@
-<ion-view view-title="Map">
+<ion-view>
+    <ion-nav-title>
+        Map
+        <button class="button-refresh button button-clear button-positive button-icon ion-refresh" ng-click="ctrl.getInitialPoint()"></button>
+    </ion-nav-title>
     <ion-content>
         <div class="button-bar">
             <a class="button icon-center" ng-class="{'button-assertive ion-record': !ctrl.isRecording, 'button-energized ion-pause': ctrl.isRecording}" ng-click="ctrl.startRecord()"></a>
             <a class="button button-dark icon-center ion-stop" ng-click="ctrl.stopRecord()"></a>
+            <a class="button button-positive icon-center ion-upload" ng-click="ctrl.uploadResult()"></a>
         </div>
 
         <ui-gmap-google-map center="ctrl.map.center"
@@ -12,16 +17,18 @@
 
             <data-ui-gmap-layer namespace="weather" type="WeatherLayer" show="ctrl.weather"></data-ui-gmap-layer>
 
-            <ui-gmap-polylines models="ctrl.polylines" path="'path'"
+            <ui-gmap-polylines models="ctrl.polylines"
+                               idkey="'id'"
+                               path="'path'"
                                stroke="'stroke'"
                                visible="visible"
                                geodesic="'geodesic'"
-                               fit="'false'"
+                               fit="false"
                                editable="'editable'"
                                draggable="'draggable'"
                                icons="'icons'"></ui-gmap-polylines>
 
-            <ui-gmap-markers doCluster="true" models="ctrl.markers" coords="'coords'" icon="'icon'" options="'options'" click="onClick">
+            <ui-gmap-markers doCluster="true" models="ctrl.markers" coords="'coords'" icon="'icon'" options="'options'" click="onClick" on-tap="onClick">
                 <ui-gmap-windows show="show">
                     <div ng-non-bindable>{{title}}</div>
                 </ui-gmap-windows>

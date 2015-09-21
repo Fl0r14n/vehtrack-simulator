@@ -24,7 +24,6 @@ $ionicons-font-path: "../lib/ionic/fonts" !default;
 .angular-google-map-container {
     width: 100%;
     height: 80vh;
-    //height: 100%;
     border: 1px solid;
     border-color: gray;
 }
@@ -37,4 +36,9 @@ $ionicons-font-path: "../lib/ionic/fonts" !default;
          margin: auto;
          font-size: x-large;
     }
+}
+.button-refresh {
+    position: fixed;
+    right: 0px;
+    margin-top: 5px;
 }

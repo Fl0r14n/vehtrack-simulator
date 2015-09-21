@@ -18,7 +18,7 @@ angular.module('menu.settings', ['ionic', 'utils']).config(function($stateProvid
         interval: 20, //s
         polyline: true,
         startStopMarkers: true,
-        keepOnCenter: false
+        keepOnCenter: true
     })
 });
 
