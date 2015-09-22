@@ -20,7 +20,7 @@ angular.module('menu.map', ['ionic', 'utils', 'nemLogging', 'uiGmapgoogle-maps',
     });
 });
 
-angular.module('menu.map').controller('mapController', function($scope, $cordovaGeolocation, $ionicLoading, $timeout, $log, config, uiGmapGoogleMapApi) {
+angular.module('menu.map').controller('mapController', function($scope, $cordovaGeolocation, $ionicLoading, $timeout, $log, config, uiGmapGoogleMapApi, trackService) {
     var self = this;
     self.gmap_icons_url = 'http://maps.google.com/mapfiles/kml/paddle/';
     self.settings = config.get('settings');
@@ -100,6 +100,9 @@ angular.module('menu.map').controller('mapController', function($scope, $cordova
                 accuracy: position.coords.accuracy,
                 timestamp: position.timestamp
             },
+            options: {
+                icon: self.gmap_icons_url + 'blu-circle-lv.png'
+            }
         }
         if(initial) {
             self.currentPosition.options = {
@@ -145,22 +148,31 @@ angular.module('menu.map').controller('mapController', function($scope, $cordova
         if(self.isRecording) {
             //on pause
             self.isRecording = false;
-            self.markPoint('pause.png');
+            self.markPoint('pause-lv.png');
             return;
         }
-        //TODO add polylines
         self.isRecording = true;
-        self.markPoint('go.png');
+        self.markPoint('go-lv.png');
     };
 
     self.stopRecord = function() {
         if(self.isRecording) {
             self.isRecording = false;
-            self.markPoint('stop.png');
+            self.markPoint('stop-lv.png');
         }
     };
 
     self.uploadResult = function() {
+//        trackService.journey.save({}, function(result) {
+//            $log.debug(result);
+//        });
+//        trackService.position.save({}, function(result) {
+//            $log.debug(result);
+//        });
+//        trackService.log.save({}, function(result) {
+//            $log.debug($result);
+//        });
+
         //TODO upload
         self.points = [];
         self.polylines = [];
@@ -229,4 +241,12 @@ angular.module('menu.map').controller('mapController', function($scope, $cordova
         });
     };
     self.polylines = [];
+});
+
+angular.module('menu.map').factory('trackService', function(restResource) {
+    return {
+        journey: restResource.$rest('journey'),
+        position: restResource.$rest('position'),
+        log: restResource.$rest('log')
+    }
 });

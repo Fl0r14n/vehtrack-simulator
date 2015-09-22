@@ -1,9 +1,11 @@
 'use strict';
 
-angular.module('main', ['ionic', 'utils', 'menu']).config(function($resourceProvider, restResourceProvider, $urlRouterProvider) {
+angular.module('main', ['ionic', 'utils', 'menu']).config(function($resourceProvider, restResourceProvider, $urlRouterProvider, $locationProvider) {
     $resourceProvider.defaults.stripTrailingSlashes = false;
     restResourceProvider.setApiPath('api/v1/');
     $urlRouterProvider.otherwise('/menu/map');
+    //html5 mode + base tag in index.html
+//    $locationProvider.html5Mode(true).hashPrefix('!');
 });
 
 angular.module('main').run(function($ionicPlatform) {
