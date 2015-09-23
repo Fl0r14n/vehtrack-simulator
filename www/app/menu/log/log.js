@@ -16,7 +16,11 @@ angular.module('menu.log', ['ionic', 'utils']).config(function($stateProvider, $
 
         $delegate.debug = function() {
             var args = [].slice.call(arguments);
-            logsProvider.addMessage(args[0]);
+            logsProvider.addMessage({
+                timestamp: Date.now(),
+                message: args[0],
+                type: args[1]
+            });
             origDebug.apply(null, args);
         }
         return $delegate;

@@ -1,7 +1,11 @@
 <ion-view class="logs" view-title="Logs">
   <ion-content>
     <ul class="list">
-      <li class="item" ng-repeat="message in ctrl.getLogs()">{{message}}</li>
+      <li class="item" ng-repeat="log in ctrl.getLogs()">
+        <i class="">{{ log.timestamp | date:'medium' }}</i>
+        <i class="">{{ log.message }}</i>
+        <i class="">{{ log.type }}</i>
+      </li>
     </ul>
   </ion-content>
   <div class="bar bar-footer bar-balanced">

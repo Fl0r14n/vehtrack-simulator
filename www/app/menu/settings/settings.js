@@ -12,13 +12,19 @@ angular.module('menu.settings', ['ionic', 'utils']).config(function($stateProvid
     });
     configProvider.set('settings', {
         tracking: false,
-        serverUrl: 'http://vehtrack-application.rhcloud.com',
-        intervalMin: 10, //s
-        intervalMax: 600, //s
+        interval_min: 10, //s
+        interval_max: 600, //s
         interval: 20, //s
         polyline: true,
-        startStopMarkers: true,
-        keepOnCenter: true
+        markers: true,
+        center: true,
+        http_host: 'http://localhost:8000',
+        client_id: '0CbDbFO4Vv1sS23DvTKkC8u7Rdllkkeh4uafCMZn',
+        auth_path: '/o/authorize/',
+        profile_uri: '/accounts/me/',
+        revoke_token_path: '/o/revoke_token/',
+        logout_path: '/accounts/logout/'
+
     })
 });
 

@@ -21,40 +21,32 @@
 
         <ion-content>
             <ion-list>
-                <ion-item menu-close ng-click="login()">
-                    Login
+
+                <ion-item menu-close href="">
+                    <oauth template="oauth_button.html" text="Login"
+                         site="{{ menu.settings.http_host}}"
+                         authorize-path="{{ menu.settings.auth_path }}"
+                         client-id="{{ menu.settings.client_id }}"
+                         redirect-uri="{{ menu.redirect_uri }}"
+                         profile-uri="{{ menu.settings.http_host }}{{ menu.settings.profile_uri }}"
+                         scope="write">
+                    </oauth>
+                    <script type="text/ng-template" id="oauth_button.html">
+                        <span class="logged-out" ng-show="show == 'logged-out'" ng-click="login()" >{{text}}</span>
+                        <span class="logged-in"  ng-show="show == 'logged-in'"  ng-click="logout()">Logout <i class="calm">{{profile.email}}</i></span>
+                        <span class="denied"     ng-show="show == 'denied'"     ng-click="login()">Access denied. Try again.</span>
+                    </script>
                 </ion-item>
+
                 <ion-item menu-close href="#/menu/map">
                     Map
                 </ion-item>
                 <ion-item menu-close href="#/menu/settings">
                     Settings
                 </ion-item>
-                <ion-item menu-close href="#/menu/gps">
-                    GPS
-                </ion-item>
                 <ion-item menu-close href="#/menu/log">
                     Logs
                 </ion-item>
-
-                <ion-item menu-close>
-                    <oauth template="oauth_button.html" text="Login"
-                         site="{{ menu.site_url}}"
-                         authorize-path="{{ menu.authorize_path}}"
-                         client-id="{{ menu.client_id}}"
-                         redirect-uri="{{ menu.redirect_uri}}"
-                         profile-uri="{{ menu.profile_uri }}"
-                         scope="write">
-                    </oauth>
-                    <script type="text/ng-template" id="oauth_button.html">
-                        <a class="item-content" href="">
-                            <span class="logged-out" ng-show="show == 'logged-out'" ng-click="login()" >{{text}}</span>
-                            <span class="logged-in"  ng-show="show == 'logged-in'"  ng-click="logout()">Logout {{profile.email}}</span>
-                            <span class="denied"     ng-show="show == 'denied'"     ng-click="login()">Access denied. Try again.</span>
-                        </a>
-                    </script>
-                </ion-item>
-
             </ion-list>
         </ion-content>
     </ion-side-menu>

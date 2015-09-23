@@ -16,7 +16,12 @@
 
       <label class="item item-input item-stacked-label">
         <span class="input-label">Server URL</span>
-        <input type="url" placeholder="settings.serverUrl" ng-model="settings.serverUrl">
+        <input type="url" placeholder="settings.http_host" ng-model="settings.http_host">
+      </label>
+
+      <label class="item item-input item-stacked-label">
+        <span class="input-label">Client ID</span>
+        <input type="url" placeholder="settings.http_host" ng-model="settings.client_id">
       </label>
 
       <label class="item item-input item-stacked-label">
@@ -24,7 +29,7 @@
 
           <div class="item range">
             <i class="icon ion-android-remove"></i>
-            <input type="range" ng-model="settings.interval" min="settings.intervalMin" max="settings.intervalMax">
+            <input type="range" ng-model="settings.interval" min="settings.interva_min" max="settings.interval_max">
             <i class="icon ion-android-add"></i>
           </div>
         </label>
@@ -46,9 +51,9 @@
       </div>
 
       <div class="item item-toggle">
-        Show start/stop markers
+        Show markers
         <label class="toggle toggle-positive">
-          <input type="checkbox" ng-model="settings.startStopMarkers">
+          <input type="checkbox" ng-model="settings.markers">
           <div class="track">
           <div class="handle"></div>
         </div>
@@ -58,7 +63,7 @@
       <div class="item item-toggle">
         Center map on location
         <label class="toggle toggle-positive">
-          <input type="checkbox" ng-model="settings.keepOnCenter">
+          <input type="checkbox" ng-model="settings.center">
           <div class="track">
           <div class="handle"></div>
         </div>
