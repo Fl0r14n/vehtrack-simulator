@@ -56,4 +56,11 @@ angular.module('menu').controller('menuController', function($scope, $ionicModal
         $log.debug('User profile');
         messagingService.pub(messagingService.DEFAULT_DOMAIN,'login', profile);
     });
+
+    self.open = function() {
+        var ref = window.open('https://www.google.com');
+        ref.addEventListener('loadstart', function() {
+            $log.debug(event.url);
+        });
+    }
 });

@@ -1,6 +1,11 @@
 # Specifies intentionally untracked files to ignore when using Git
 # http://git-scm.com/docs/gitignore
 
+!platforms/android/AndroidManifest.xml
+
 node_modules/
-platforms/
+platforms/android/*
+platforms/platforms.json
 plugins/
+
+
