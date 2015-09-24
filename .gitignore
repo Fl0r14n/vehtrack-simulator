@@ -9,3 +9,5 @@ platforms/platforms.json
 plugins/
 
 
+/nbproject
+.idea

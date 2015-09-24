@@ -1,3 +1,5 @@
+/* global angular */
+
 'use strict';
 
 angular.module('menu.log', ['ionic', 'utils']).config(function($stateProvider, $provide, logsProvider) {
@@ -22,7 +24,7 @@ angular.module('menu.log', ['ionic', 'utils']).config(function($stateProvider, $
                 type: args[1]
             });
             origDebug.apply(null, args);
-        }
+        };
         return $delegate;
     });
 });
@@ -37,22 +39,22 @@ angular.module('menu.log').provider('logs', function() {
         if(size > 1 && size < self.maxSize) {
             self.size = size;
         }
-    }
+    };
 
     self.addMessage = function(message) {
         if(self.messages.length>=self.size) {
             self.messages.pop();
         }
         self.messages.unshift(message);
-    }
+    };
 
     self.getMessages = function() {
         return self.messages;
-    }
+    };
 
     self.clearMessages = function() {
         self.messages = [];
-    }
+    };
 
     return {
         setSize: self.setSize,
@@ -61,18 +63,18 @@ angular.module('menu.log').provider('logs', function() {
             return {
                 getMessages: self.getMessages,
                 clearMessages: self.clearMessages
-            }
+            };
         }
-    }
+    };
 });
 
 angular.module('menu.log').controller('logController', function($scope, logs) {
     var self = this;
     self.getLogs = function() {
         return logs.getMessages();
-    }
+    };
     self.clear = function() {
         logs.clearMessages();
-    }
+    };
 });
 

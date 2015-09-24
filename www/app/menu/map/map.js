@@ -1,3 +1,5 @@
+/* global angular, cordova, google */
+
 'use strict';
 
 angular.module('menu.map', ['ionic', 'utils', 'nemLogging', 'uiGmapgoogle-maps', 'ngCordova']).config(function($stateProvider, uiGmapGoogleMapApiProvider) {
@@ -29,6 +31,8 @@ angular.module('menu.map').controller('mapController', function($scope, $cordova
         cordova.plugins.backgroundMode.setDefaults({ text:'vehtrack-simulator collecting locations'});
         // Enable background mode while track is playing
         cordova.plugins.backgroundMode.enable();
+        //init location
+        self.getInitialPoint();
     });
 
     uiGmapGoogleMapApi.then(function(maps) {
@@ -53,7 +57,7 @@ angular.module('menu.map').controller('mapController', function($scope, $cordova
             self.map.center = {
                 latitude: position.coords.latitude,
                 longitude: position.coords.longitude
-            }
+            };
             self.map.zoom = 18;
             $timeout(function() {
                 $ionicLoading.hide();
@@ -103,19 +107,19 @@ angular.module('menu.map').controller('mapController', function($scope, $cordova
             options: {
                 icon: self.gmap_icons_url + 'blu-circle-lv.png'
             }
-        }
+        };
         if(initial) {
             self.currentPosition.options = {
                 animation: google.maps.Animation.DROP
-            }
+            };
         }
         if(self.settings.keepOnCenter) {
             self.map.center = {
                 latitude: position.coords.latitude,
                 longitude: position.coords.longitude
-            }
+            };
         }
-    }
+    };
 
     self.drawPolyline = function(position) {
         if(self.settings.polyline) {
@@ -129,7 +133,7 @@ angular.module('menu.map').controller('mapController', function($scope, $cordova
                 self.addPolyline(points);
             }
         }
-    }
+    };
     self.points = [];
 
     self.markPoint = function(icon) {
@@ -141,7 +145,7 @@ angular.module('menu.map').controller('mapController', function($scope, $cordova
                 icon: self.gmap_icons_url+icon
             }]);
         }
-    }
+    };
 
     self.isRecording = false;
     self.startRecord = function() {
@@ -177,7 +181,7 @@ angular.module('menu.map').controller('mapController', function($scope, $cordova
         self.points = [];
         self.polylines = [];
         self.markers = [];
-    }
+    };
 
 
     self.map = {
@@ -214,7 +218,7 @@ angular.module('menu.map').controller('mapController', function($scope, $cordova
                 },
                 coords: {
                     latitude: markersArray[i].latitude,
-                    longitude: markersArray[i].longitude,
+                    longitude: markersArray[i].longitude
                 },
                 title: markersArray[i].title,
                 icon: markersArray[i].icon,
@@ -248,5 +252,5 @@ angular.module('menu.map').factory('trackService', function(restResource) {
         journey: restResource.$rest('journey'),
         position: restResource.$rest('position'),
         log: restResource.$rest('log')
-    }
+    };
 });

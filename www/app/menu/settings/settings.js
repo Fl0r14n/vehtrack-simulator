@@ -1,3 +1,5 @@
+/* global angular */
+
 'use strict';
 
 angular.module('menu.settings', ['ionic', 'utils']).config(function($stateProvider, configProvider) {
@@ -27,7 +29,7 @@ angular.module('menu.settings', ['ionic', 'utils']).config(function($stateProvid
         revoke_token_path: '/o/revoke_token/',
         logout_path: '/accounts/logout/'
 
-    })
+    });
 });
 
 angular.module('menu.settings').controller('settingsController', function($scope, config) {

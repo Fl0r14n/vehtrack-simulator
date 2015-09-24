@@ -1,3 +1,5 @@
+/* global angular, cordova, StatusBar */
+
 'use strict';
 
 angular.module('main', ['ionic', 'utils', 'menu']).config(function($resourceProvider, restResourceProvider, $urlRouterProvider) {
