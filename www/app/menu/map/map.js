@@ -4,13 +4,13 @@
 
 angular.module('menu.map', ['ionic', 'utils', 'nemLogging', 'uiGmapgoogle-maps', 'ngCordova']).config(function($stateProvider, uiGmapGoogleMapApiProvider) {
     $stateProvider.state('menu.map', {
-      url: '/map',
-      views: {
-        'menuContent': {
-          templateUrl: 'app/menu/map/map.html',
-          controller: 'mapController as ctrl'
+        url: '/map',
+        views: {
+            'menuContent': {
+                templateUrl: 'app/menu/map/map.html',
+                controller: 'mapController as ctrl'
+            }
         }
-      }
     });
     uiGmapGoogleMapApiProvider.configure({
         key: 'AIzaSyAtdQ7J2vsDwdw3xnIPapseiggP2wHsVb4',
@@ -24,11 +24,11 @@ angular.module('menu.map', ['ionic', 'utils', 'nemLogging', 'uiGmapgoogle-maps',
 
 angular.module('menu.map').controller('mapController', function($scope, $cordovaGeolocation, $ionicLoading, $timeout, $log, config, uiGmapGoogleMapApi, trackService) {
     var self = this;
-    self.gmap_icons_url = 'http://maps.google.com/mapfiles/kml/paddle/';
+    self.gmap_icons_url = 'img/markers/';
     self.settings = config.get('settings');
 
-    document.addEventListener('deviceready', function () {
-        cordova.plugins.backgroundMode.setDefaults({ text:'vehtrack-simulator collecting locations'});
+    document.addEventListener('deviceready', function() {
+        cordova.plugins.backgroundMode.setDefaults({text: 'vehtrack-simulator collecting locations'});
         // Enable background mode while track is playing
         cordova.plugins.backgroundMode.enable();
         //init location
@@ -43,7 +43,7 @@ angular.module('menu.map').controller('mapController', function($scope, $cordova
         //clear current position if any
         self.currentPosition = undefined;
         //remove location poll if any
-        if(angular.isDefined(self.watch)) {
+        if (angular.isDefined(self.watch)) {
             self.watch.clearWatch();
         }
 
@@ -64,9 +64,9 @@ angular.module('menu.map').controller('mapController', function($scope, $cordova
                 self.setCurrentPosition(position, true);
                 self.startWatch();
             }, 1000);
-        }, function(error) {
+        }, function() {
             $ionicLoading.hide();
-            $ionicLoading.show({ template: 'Could not get location', noBackdrop: true, duration: 2000 });
+            $ionicLoading.show({template: 'Could not get location', noBackdrop: true, duration: 2000});
             $log.debug('could not get location');
         });
     };
@@ -75,7 +75,7 @@ angular.module('menu.map').controller('mapController', function($scope, $cordova
         self.watch = $cordovaGeolocation.watchPosition({
             frequency: self.settings.interval * 1000,
             timeout: 3000,
-            enableHighAccuracy: false //may cause errors if true
+            enableHighAccuracy: true
         });
         self.watch.then(
             null,
@@ -84,7 +84,7 @@ angular.module('menu.map').controller('mapController', function($scope, $cordova
             },
             function(position) {
                 self.setCurrentPosition(position);
-                if(self.isRecording) {
+                if (self.isRecording) {
                     self.drawPolyline(position);
                 }
             }
@@ -92,7 +92,6 @@ angular.module('menu.map').controller('mapController', function($scope, $cordova
     };
 
     self.setCurrentPosition = function(position, initial) {
-        $log.debug(position.coords.latitude+', '+position.coords.longitude);
         self.currentPosition = {
             id: self.guid(),
             coords: {
@@ -108,48 +107,83 @@ angular.module('menu.map').controller('mapController', function($scope, $cordova
                 icon: self.gmap_icons_url + 'blu-circle-lv.png'
             }
         };
-        if(initial) {
+        if (initial) {
             self.currentPosition.options = {
                 animation: google.maps.Animation.DROP
             };
         }
-        if(self.settings.keepOnCenter) {
+        if (self.settings.center) {
             self.map.center = {
                 latitude: position.coords.latitude,
                 longitude: position.coords.longitude
             };
+            self.map.zoom = self._getZoomBySpeed(position.coords.speed);
         }
     };
 
+    self._getZoomBySpeed = function(speed) {
+        if(speed!==null) {
+            if(speed>100) {
+                return 14;
+            } else if(speed>50) {
+                return 15;
+            } else if(speed>30) {
+                return 16;
+            } else if(speed>7) {
+                return 17;
+            }
+        };
+        return 18;
+    };
+
     self.drawPolyline = function(position) {
-        if(self.settings.polyline) {
+        if (self.settings.polyline) {
             self.points.push({
                 latitude: position.coords.latitude,
-                longitude: position.coords.longitude
+                longitude: position.coords.longitude,
+                speed: position.coords.speed
             });
-            if(self.points.length > 1) {
-                var points = self.points.slice(self.points.length-2, self.points.length);
-                $log.debug(points);
-                self.addPolyline(points);
+            if (self.points.length > 1) {
+                var points = self.points.slice(self.points.length - 2, self.points.length);
+                self.addPolyline(points, self._getPolylineColorBySpeed(points));
             }
         }
     };
     self.points = [];
 
+    self._getPolylineColorBySpeed = function(points) {
+        var speed = 0;
+        for (var i = 0, len = points.length; i < len; ++i) {
+            speed += points[i];
+        }
+        speed /= points.length;
+        if (speed > 130) {
+            return '#ef473a';
+        } else if (speed > 90) {
+            return '#ffc900';
+        } else if (speed > 50) {
+            return '#33cd5f';
+        } else if (speed > 10) {
+            return '#11c1f3';
+        } else {
+            return '#387ef5';
+        }
+    };
+
     self.markPoint = function(icon) {
-        if(self.settings.startStopMarkers) {
+        if (self.settings.markers && angular.isDefined(self.setCurrentPosition)) {
             self.addMarkers([{
-                latitude: self.currentPosition.coords.latitude,
-                longitude: self.currentPosition.coords.longitude,
-                title: (self.currentPosition.coords.speed * 3,6)+'km/h '+self.currentPosition.coords.speed+'°',
-                icon: self.gmap_icons_url+icon
-            }]);
+                    latitude: self.currentPosition.coords.latitude,
+                    longitude: self.currentPosition.coords.longitude,
+                    title: (self.currentPosition.coords.speed * 3, 6) + 'km/h ' + self.currentPosition.coords.speed + '°',
+                    icon: self.gmap_icons_url + icon
+                }]);
         }
     };
 
     self.isRecording = false;
     self.startRecord = function() {
-        if(self.isRecording) {
+        if (self.isRecording) {
             //on pause
             self.isRecording = false;
             self.markPoint('pause-lv.png');
@@ -160,7 +194,7 @@ angular.module('menu.map').controller('mapController', function($scope, $cordova
     };
 
     self.stopRecord = function() {
-        if(self.isRecording) {
+        if (self.isRecording) {
             self.isRecording = false;
             self.markPoint('stop-lv.png');
         }
@@ -203,17 +237,17 @@ angular.module('menu.map').controller('mapController', function($scope, $cordova
     //to show the weather this is a bug
     self.weather = false;
 
-    self.guid = function () {
+    self.guid = function() {
         return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     };
 
-    self.addMarkers = function (markersArray) {
+    self.addMarkers = function(markersArray) {
         var _markers = [];
         for (var i = 0; i < markersArray.length; i++) {
             _markers.push({
                 id: self.guid(),
                 show: false,
-                onClick: function (self) {
+                onClick: function(self) {
                     self.show = !self.show;
                 },
                 coords: {
@@ -230,12 +264,12 @@ angular.module('menu.map').controller('mapController', function($scope, $cordova
     };
     self.markers = [];
 
-    self.addPolyline = function (coordsArray) {
+    self.addPolyline = function(coordsArray, color) {
         self.polylines.push({
             id: self.guid(),
             path: coordsArray,
             stroke: {
-                color: '#6060FB',
+                color: color || '#6060FB',
                 weight: 3
             },
             editable: false,
