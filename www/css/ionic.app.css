@@ -7717,3 +7717,6 @@ a.button {
   position: fixed;
   right: 0px;
   margin-top: 5px; }
+
+.normal-wrap {
+  white-space: normal; }

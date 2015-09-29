@@ -3,7 +3,7 @@
     <ul class="list">
       <li class="item" ng-repeat="log in ctrl.getLogs()">
         <i class="">{{ log.timestamp | date:'medium' }}</i>
-        <i class="">{{ log.message }}</i>
+        <i class="normal-wrap">{{ log.message }}</i>
         <i class="">{{ log.type }}</i>
       </li>
     </ul>

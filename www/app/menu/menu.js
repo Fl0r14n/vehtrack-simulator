@@ -11,7 +11,7 @@ angular.module('menu', ['ionic', 'menu.log', 'menu.map', 'menu.settings', 'ionic
     });
 });
 
-angular.module('menu').controller('menuController', function($scope, $ionicModal, $timeout, config, $http, messagingService, $location, $log, OauthToken) {
+angular.module('menu').controller('menuController', function($scope, config, $http, messagingService, $location, $log, OauthToken) {
 
     var self = this;
     self.settings = config.get('settings');

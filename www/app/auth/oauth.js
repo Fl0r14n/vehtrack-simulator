@@ -46,7 +46,16 @@ angular.module('ionicOauth').factory('OauthStorage', function($sessionStorage, $
     return service;
 });
 
-angular.module('ionicOauth').factory('OauthToken', function($location, $rootScope, OauthStorage, $interval) {
+angular.module('ionicOauth').factory('OauthToken', function($scope, $location, $rootScope, OauthStorage, $interval) {
+    
+    $scope.$on('oauth:expired', function() {
+        destroy($scope);
+    });
+    
+    $scope.$on('oauth:loggedOut', function() {
+        destroy($scope);
+    });
+
     var service = {
         token: null
     };
@@ -201,17 +210,16 @@ angular.module('ionicOauth').directive('ionOauth', function($compile, $cordovaOa
             $scope.$watch('clientId', function() {
                 init();
             });
-            
+
             $scope.$on('$routeChangeSuccess', function() {
                 init();
             });
-            
+
             $scope.$on('oauth:login', function() {
                 init();
             });
-            
-            $scope.$on('oauth:expired', function() {
-                OauthToken.destroy($scope);
+
+            $scope.$on('oauth:expired', function() {          
                 $scope.show = 'logged-out';
             });
 
@@ -326,11 +334,9 @@ angular.module('ionicOauth').directive('ionOauth', function($compile, $cordovaOa
             };
 
             $scope.logout = function() {
-                OauthToken.destroy($scope);
-                $rootScope.$broadcast('oauth:loggedOut');
-                $scope.show = 'logged-out';
+                loggedOut();
             };
-           
+
             var default_template = [
                 '<a class="oauth">',
                 '   <span href="#" class="logged-out" ng-show="show==\'logged-out\'" ng-click="login()" >{{text}}</span>',
