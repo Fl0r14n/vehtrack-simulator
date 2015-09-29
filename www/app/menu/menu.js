@@ -11,7 +11,7 @@ angular.module('menu', ['ionic', 'menu.log', 'menu.map', 'menu.settings', 'ionic
     });
 });
 
-angular.module('menu').controller('menuController', function($scope, $ionicModal, $timeout, config, $http, messagingService, $location, $log) {
+angular.module('menu').controller('menuController', function($scope, $ionicModal, $timeout, config, $http, messagingService, $location, $log, OauthToken) {
 
     var self = this;
     self.settings = config.get('settings');
@@ -21,12 +21,16 @@ angular.module('menu').controller('menuController', function($scope, $ionicModal
 
     $scope.$on('oauth:authorized', function(event, token) {
         $log.debug('Logged in');
+        self.authHeaders = OauthToken.headers();
     });
 
     $scope.$on('oauth:loggedOut', function(event, token) {
         $log.debug('Logged out');
         //TODO this does not work
-        $http.get(self.settings.http_host + self.settings.logout_path);
+        $http.get(self.settings.http_host + self.settings.logout_path, {
+            headers: self.authHeaders
+        });
+        self.authHeaders = undefined;
         messagingService.pub(messagingService.DEFAULT_DOMAIN,'logout', event);
     });
 

@@ -7,7 +7,7 @@ angular.module('ionicOauth', ['ionic', 'ngCordova', 'ngStorage']).config(functio
         template: '',
         controller: function($location, OauthToken) {
             var hash = $location.path().substr(1);
-            OauthToken.setTokenFromString(hash);
+            OauthToken.set(hash);
             $location.path('/');
             $location.replace();
         }
@@ -51,21 +51,24 @@ angular.module('ionicOauth').factory('OauthToken', function($location, $rootScop
         token: null
     };
 
-    oAuth2HashTokens = [//per http://tools.ietf.org/html/rfc6749#section-4.2.2
+    oAuth2HashTokens = [
         'access_token', 'token_type', 'expires_in', 'scope', 'state',
         'error', 'error_description'
     ];
 
-    service.get = function() {
+    service.init = function() {
+        //If hash is present in URL always use it, cuz its coming from oAuth2 provider redirect
+        this.set($location.hash());
+        if (null === service.token) {
+            var params = OauthStorage.get('token');
+            if (params) {
+                setToken(params);
+            }
+        }
         return this.token;
     };
 
-    service.set = function() {
-        this.setTokenFromString($location.hash());
-        //If hash is present in URL always use it, cuz its coming from oAuth2 provider redirect
-        if (null === service.token) {
-            setTokenFromSession();
-        }
+    service.get = function() {
         return this.token;
     };
 
@@ -75,17 +78,10 @@ angular.module('ionicOauth').factory('OauthToken', function($location, $rootScop
         return this.token;
     };
 
-
-
-    /**
-     * Get the access token from a string and save it
-     * @param hash
-     */
-    service.setTokenFromString = function(hash) {
-        var params = getTokenFromString(hash);
-
+    service.set = function(hash) {
+        var params = parseOauthUri(hash);
         if (params) {
-            removeFragment();
+            delOauthUriVals();
             setToken(params);
             setExpiresAt();
             // We have to save it again to make sure expires_at is set
@@ -95,26 +91,18 @@ angular.module('ionicOauth').factory('OauthToken', function($location, $rootScop
         }
     };
 
-    /* * * * * * * * * *
-     * PRIVATE METHODS *
-     * * * * * * * * * */
-
-    /**
-     * Set the access token from the sessionStorage.
-     */
-    var setTokenFromSession = function() {
-        var params = OauthStorage.get('token');
-        if (params) {
-            setToken(params);
+    var parseOauthUri = function(hash) {
+        var params = {},
+            regex = /([^&=]+)=([^&]*)/g,
+            m;
+        while ((m = regex.exec(hash)) !== null) {
+            params[decodeURIComponent(m[1])] = decodeURIComponent(m[2]);
+        }
+        if (params.access_token || params.error) {
+            return params;
         }
     };
 
-    /**
-     * Set the access token.
-     *
-     * @param params
-     * @returns {*|{}}
-     */
     var setToken = function(params) {
         service.token = service.token || {};      // init the token
         angular.extend(service.token, params);      // set the access token params
@@ -124,35 +112,10 @@ angular.module('ionicOauth').factory('OauthToken', function($location, $rootScop
         return service.token;
     };
 
-    /**
-     * Parse the fragment URI and return an object
-     * @param hash
-     * @returns {{}}
-     */
-    var getTokenFromString = function(hash) {
-        var params = {},
-            regex = /([^&=]+)=([^&]*)/g,
-            m;
-
-        while ((m = regex.exec(hash)) !== null) {
-            params[decodeURIComponent(m[1])] = decodeURIComponent(m[2]);
-        }
-
-        if (params.access_token || params.error) {
-            return params;
-        }
-    };
-
-    /**
-     * Save the access token into the session
-     */
     var setTokenInSession = function() {
         OauthStorage.set('token', service.token);
     };
 
-    /**
-     * Set the access token expiration date (useful for refresh logics)
-     */
     var setExpiresAt = function() {
         if (!service.token) {
             return;
@@ -167,10 +130,6 @@ angular.module('ionicOauth').factory('OauthToken', function($location, $rootScop
         }
     };
 
-
-    /**
-     * Set the timeout at which the expired event is fired
-     */
     var setExpiresAtEvent = function() {
         // Don't bother if there's no expires token
         if (typeof (service.token.expires_at) === 'undefined' || service.token.expires_at === null) {
@@ -184,10 +143,7 @@ angular.module('ionicOauth').factory('OauthToken', function($location, $rootScop
         }
     };
 
-    /**
-     * Remove the oAuth2 pieces from the hash fragment
-     */
-    var removeFragment = function() {
+    var delOauthUriVals = function() {
         var curHash = $location.hash();
         angular.forEach(oAuth2HashTokens, function(hashKey) {
             var re = new RegExp('&' + hashKey + '(=[^&]*)?|^' + hashKey + '(=[^&]*)?&?');
@@ -224,7 +180,7 @@ angular.module('ionicOauth').factory('OauthInterceptor', function($rootScope, Oa
     };
 });
 
-angular.module('ionicOauth').directive('ionOauth', function($log, $compile, $cordovaOauthUtility, $http, $templateCache, $rootScope, OauthToken, OauthStorage) {
+angular.module('ionicOauth').directive('ionOauth', function($compile, $cordovaOauthUtility, $http, $templateCache, $rootScope, OauthToken, OauthStorage) {
     return {
         restrict: 'AE',
         replace: true,
@@ -245,11 +201,25 @@ angular.module('ionicOauth').directive('ionOauth', function($log, $compile, $cor
             $scope.$watch('clientId', function() {
                 init();
             });
+            
+            $scope.$on('$routeChangeSuccess', function() {
+                init();
+            });
+            
+            $scope.$on('oauth:login', function() {
+                init();
+            });
+            
+            $scope.$on('oauth:expired', function() {
+                OauthToken.destroy($scope);
+                $scope.show = 'logged-out';
+            });
 
             var init = function() {
                 initAttrs();
                 OauthStorage.use($scope.storage);
                 compile();
+                OauthToken.init($scope);
                 initProfile();
                 initView();
             };
@@ -339,15 +309,14 @@ angular.module('ionicOauth').directive('ionOauth', function($log, $compile, $cor
                     var cordovaMetadata = cordova.require("cordova/plugin_list").metadata;
                     if ($cordovaOauthUtility.isInAppBrowserInstalled(cordovaMetadata) === true) {
                         $scope.redirectUri = 'http://localhost/callback';
-                        var browserRef = window.open(authUrl());
+                        var browserRef = window.open(authUrl(), '_blank', 'location=yes');
                         browserRef.addEventListener('loadstart', function(event) {
                             if ((event.url).indexOf($scope.redirectUri) === 0) {
                                 browserRef.removeEventListener("exit", function(event) {
                                 });
                                 browserRef.close();
-                                $log.debug(event.url);
-                                //var callbackResponse = (event.url).split("#")[1];
-                                //TODO get profile $http.get($scope.profileUri)
+                                var callbackResponse = (event.url).split("#")[1];
+                                OauthToken.set(callbackResponse);
                             }
                         });
                     }
@@ -361,17 +330,7 @@ angular.module('ionicOauth').directive('ionOauth', function($log, $compile, $cor
                 $rootScope.$broadcast('oauth:loggedOut');
                 $scope.show = 'logged-out';
             };
-
-            $scope.$on('oauth:expired', function() {
-                OauthToken.destroy($scope);
-                $scope.show = 'logged-out';
-            });
-            
-            $scope.$on('$routeChangeSuccess', function () {
-                console.log('HERE');
-                init();
-            });
-
+           
             var default_template = [
                 '<a class="oauth">',
                 '   <span href="#" class="logged-out" ng-show="show==\'logged-out\'" ng-click="login()" >{{text}}</span>',
