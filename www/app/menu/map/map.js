@@ -22,7 +22,7 @@ angular.module('menu.map', ['ionic', 'utils', 'nemLogging', 'uiGmapgoogle-maps',
     });
 });
 
-angular.module('menu.map').controller('mapController', function($scope, $cordovaGeolocation, $ionicLoading, $timeout, $log, config, uiGmapGoogleMapApi, trackService) {
+angular.module('menu.map').controller('mapController', function($scope, $filter, $cordovaGeolocation, $ionicLoading, $timeout, $log, config, uiGmapGoogleMapApi, trackService) {
     var self = this;
     self.gmap_icons_url = 'img/markers/';
     self.settings = config.get('settings');
@@ -72,6 +72,7 @@ angular.module('menu.map').controller('mapController', function($scope, $cordova
     };
 
     self.startWatch = function() {
+        //TODO frequency does not work, drops a position every second
         self.watch = $cordovaGeolocation.watchPosition({
             frequency: self.settings.interval * 1000,
             timeout: 3000,
@@ -84,12 +85,23 @@ angular.module('menu.map').controller('mapController', function($scope, $cordova
             },
             function(position) {
                 self.setCurrentPosition(position);
+                self.recordPosition(position);
                 if (self.isRecording) {
-                    self.drawPolyline(position);
+                    self.drawPolyline();
                 }
             }
         );
     };
+
+    self.recordPosition = function(position) {
+        self.points.push({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            speed: position.coords.speed,
+            timestamp: position.timestamp
+        });
+    };
+    self.points = [];
 
     self.setCurrentPosition = function(position, initial) {
         self.currentPosition = {
@@ -122,39 +134,34 @@ angular.module('menu.map').controller('mapController', function($scope, $cordova
     };
 
     self._getZoomBySpeed = function(speed) {
-        if(speed!==null) {
-            if(speed>100) {
+        if (speed !== null) {
+            if (speed > 100) {
                 return 14;
-            } else if(speed>50) {
+            } else if (speed > 50) {
                 return 15;
-            } else if(speed>30) {
+            } else if (speed > 30) {
                 return 16;
-            } else if(speed>7) {
+            } else if (speed > 7) {
                 return 17;
             }
-        };
+        }
+        ;
         return 18;
     };
 
-    self.drawPolyline = function(position) {
+    self.drawPolyline = function() {
         if (self.settings.polyline) {
-            self.points.push({
-                latitude: position.coords.latitude,
-                longitude: position.coords.longitude,
-                speed: position.coords.speed
-            });
             if (self.points.length > 1) {
                 var points = self.points.slice(self.points.length - 2, self.points.length);
                 self.addPolyline(points, self._getPolylineColorBySpeed(points));
             }
         }
     };
-    self.points = [];
 
     self._getPolylineColorBySpeed = function(points) {
         var speed = 0;
         for (var i = 0, len = points.length; i < len; ++i) {
-            speed += points[i];
+            speed += points[i].speed;
         }
         speed /= points.length;
         if (speed > 130) {
@@ -198,6 +205,69 @@ angular.module('menu.map').controller('mapController', function($scope, $cordova
             self.isRecording = false;
             self.markPoint('stop-lv.png');
         }
+    };
+
+    self.marshallTimestamp = function(timestamp) {
+        return $filter('date')(timestamp, 'yyyy-MM-ddTHH:mm:ss', 'UTC');
+    };
+
+    self.buildJourney = function(points) {
+        var max_speed = 0, avg_speed = 0, duration = 0, distance = 0;
+        for (var i = 0, len = points.length; i < len; ++i) {
+            var point = points[i];
+            if (point.speed > max_speed) {
+                max_speed = point.speed;
+            }
+            avg_speed += point.speed;
+            if (i > 0) {
+                var last_point = points[i - 1];
+                distance += Math.sqrt(Math.pow(point.laitude - last_point.latitude, 2) * 111141.52 + Math.pow(point.longitude - last_point.longitude, 2) * 78158.03);
+            }
+        }
+        avg_speed /= points.length;
+        duration = points[points.length - 1].timestamp - points[0].timestamp;
+        return {
+            start_latitude: points[0].latitude,
+            start_longitude: points[0].longitude,
+            start_timestamp: self.marshallTimestamp(points[0].timestamp),
+            stop_latitude: points[points.length - 1].latitude,
+            stop_longitude: points[points.length - 1].longitude,
+            stop_timestamp: self.marshallTimestamp(points[points.lenght - 1].timestamp),
+            distance: distance,
+            average_speed: avg_speed,
+            maximum_speed: max_speed,
+            duration: duration,
+            device: '/api/v1/device/device_0@vehtrack.com/'
+        };
+    };
+
+    self.buildPositions = function(points) {
+        var positions = [];
+        for (var i = 0, len = points.length; i < len; ++i) {
+            positions.push({
+                latitude: points[i].latitude,
+                longitude: points[i].longitude,
+                timestamp: self.marshallTimestamp(points[i].timestamp),
+                speed: points[i].speed,
+                journey: '',
+                device: '/api/v1/device/device_0@vehtrack.com/'
+            });
+        }
+        return positions;
+    };
+
+    self.buildLogs = function(logs) {
+        var logs = [];
+        for (var i = 0, len = logs.length; i < len; ++i) {
+            logs.push({
+                timestamp: logs[i].timestamp,
+                level: '',
+                message: '',
+                journey: '',
+                device: ''
+            });
+        }
+        return logs;
     };
 
     self.uploadResult = function() {
