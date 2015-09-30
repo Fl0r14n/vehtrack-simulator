@@ -46,14 +46,14 @@ angular.module('ionicOauth').factory('OauthStorage', function($sessionStorage, $
     return service;
 });
 
-angular.module('ionicOauth').factory('OauthToken', function($scope, $location, $rootScope, OauthStorage, $interval) {
+angular.module('ionicOauth').factory('OauthToken', function($location, $rootScope, OauthStorage, $interval) {
     
-    $scope.$on('oauth:expired', function() {
-        destroy($scope);
+    $rootScope.$on('oauth:expired', function() {
+        service.destroy();
     });
     
-    $scope.$on('oauth:loggedOut', function() {
-        destroy($scope);
+    $rootScope.$on('oauth:loggedOut', function() {
+        service.destroy();
     });
 
     var service = {
