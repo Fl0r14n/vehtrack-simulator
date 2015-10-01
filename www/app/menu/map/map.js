@@ -22,7 +22,7 @@ angular.module('menu.map', ['ionic', 'utils', 'nemLogging', 'uiGmapgoogle-maps',
     });
 });
 
-angular.module('menu.map').controller('mapController', function($scope, $filter, $cordovaGeolocation, $ionicLoading, $timeout, $log, config, uiGmapGoogleMapApi, trackService) {
+angular.module('menu.map').controller('mapController', function($cordovaGeolocation, $ionicLoading, $timeout, $log, config, uiGmapGoogleMapApi, trackService) {
     var self = this;
     self.gmap_icons_url = 'img/markers/';
     self.settings = config.get('settings');
@@ -207,70 +207,9 @@ angular.module('menu.map').controller('mapController', function($scope, $filter,
         }
     };
 
-    self.marshallTimestamp = function(timestamp) {
-        return $filter('date')(timestamp, 'yyyy-MM-ddTHH:mm:ss', 'UTC');
-    };
-
-    self.buildJourney = function(points) {
-        var max_speed = 0, avg_speed = 0, duration = 0, distance = 0;
-        for (var i = 0, len = points.length; i < len; ++i) {
-            var point = points[i];
-            if (point.speed > max_speed) {
-                max_speed = point.speed;
-            }
-            avg_speed += point.speed;
-            if (i > 0) {
-                var last_point = points[i - 1];
-                distance += Math.sqrt(Math.pow(point.laitude - last_point.latitude, 2) * 111141.52 + Math.pow(point.longitude - last_point.longitude, 2) * 78158.03);
-            }
-        }
-        avg_speed /= points.length;
-        duration = points[points.length - 1].timestamp - points[0].timestamp;
-        return {
-            start_latitude: points[0].latitude,
-            start_longitude: points[0].longitude,
-            start_timestamp: self.marshallTimestamp(points[0].timestamp),
-            stop_latitude: points[points.length - 1].latitude,
-            stop_longitude: points[points.length - 1].longitude,
-            stop_timestamp: self.marshallTimestamp(points[points.lenght - 1].timestamp),
-            distance: distance,
-            average_speed: avg_speed,
-            maximum_speed: max_speed,
-            duration: duration,
-            device: '/api/v1/device/device_0@vehtrack.com/'
-        };
-    };
-
-    self.buildPositions = function(points) {
-        var positions = [];
-        for (var i = 0, len = points.length; i < len; ++i) {
-            positions.push({
-                latitude: points[i].latitude,
-                longitude: points[i].longitude,
-                timestamp: self.marshallTimestamp(points[i].timestamp),
-                speed: points[i].speed,
-                journey: '',
-                device: '/api/v1/device/device_0@vehtrack.com/'
-            });
-        }
-        return positions;
-    };
-
-    self.buildLogs = function(logs) {
-        var logs = [];
-        for (var i = 0, len = logs.length; i < len; ++i) {
-            logs.push({
-                timestamp: logs[i].timestamp,
-                level: '',
-                message: '',
-                journey: '',
-                device: ''
-            });
-        }
-        return logs;
-    };
-
     self.uploadResult = function() {
+        var journey = trackService.buildJourney(self.points);
+        console.log(journey);
 //        trackService.journey.save({}, function(result) {
 //            $log.debug(result);
 //        });
@@ -351,10 +290,83 @@ angular.module('menu.map').controller('mapController', function($scope, $filter,
     self.polylines = [];
 });
 
-angular.module('menu.map').factory('trackService', function(restResource) {
-    return {
-        journey: restResource.$rest('journey'),
-        position: restResource.$rest('position'),
-        log: restResource.$rest('log')
+angular.module('menu.map').factory('trackService', function(restResource, config, $filter) {
+    var service = {};
+    service.journey = restResource.$rest('journey');
+    service.position = restResource.$rest('position');
+    service.log = restResource.$rest('log');
+    
+    service.buildJourney = function(points) {
+        var max_speed = 0, avg_speed = 0, duration = 0, distance = 0;
+        for (var i = 0, len = points.length; i < len; ++i) {
+            var point = points[i];
+            if (point.speed > max_speed) {
+                max_speed = point.speed;
+            }
+            avg_speed += point.speed;
+            if (i > 0) {
+                var last_point = points[i - 1];
+                distance += Math.sqrt(Math.pow(point.laitude - last_point.latitude, 2) * 111141.52 + Math.pow(point.longitude - last_point.longitude, 2) * 78158.03);
+            }
+        }
+        avg_speed /= points.length;
+        duration = points[points.length - 1].timestamp - points[0].timestamp;
+        var start_point = points[0];
+        var stop_point = points[points.length -1];
+        return {
+            start_latitude: start_point.latitude,
+            start_longitude: start_point.longitude,
+            start_timestamp: marshallTimestamp(start_point.timestamp),
+            stop_latitude: stop_point.latitude,
+            stop_longitude: stop_point.longitude,
+            stop_timestamp: marshallTimestamp(stop_point.timestamp),
+            distance: distance,
+            average_speed: avg_speed,
+            maximum_speed: max_speed,
+            duration: duration,
+            device: getDevice()
+        };
     };
+
+    service.buildPositions = function(points, journey) {
+        var positions = [];
+        for (var i = 0, len = points.length; i < len; ++i) {
+            positions.push({
+                latitude: points[i].latitude,
+                longitude: points[i].longitude,
+                timestamp: marshallTimestamp(points[i].timestamp),
+                speed: points[i].speed,
+                journey: journey,
+                device: getDevice()
+            });
+        }
+        return positions;
+    };
+
+    service.buildLogs = function(messages, journey) {
+        var logs = [];
+        for (var i = 0, len = messages.length; i < len; ++i) {
+            logs.push({
+                timestamp: messages[i].timestamp,
+                level: messages[i].type,
+                message: messages[i].message,
+                journey: journey,
+                device: getDevice()
+            });
+        }
+        return logs;
+    };
+    
+    var marshallTimestamp = function(timestamp) {
+        return $filter('date')(timestamp, 'yyyy-MM-ddTHH:mm:ss', 'UTC');
+    };
+    
+    var getDevice = function() {
+        var profile = config.get('profile');
+        if(angular.isDefined(profile) && profile !== null) {
+            return restResource.endpoint('device') + profile.email + '/';
+        }
+    };
+    
+    return service;
 });

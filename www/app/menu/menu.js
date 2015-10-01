@@ -32,6 +32,7 @@ angular.module('menu').controller('menuController', function($scope, config, $ht
         });
         self.authHeaders = undefined;
         messagingService.pub(messagingService.DEFAULT_DOMAIN,'logout', event);
+        config.set('profile', null);
     });
 
     $scope.$on('oauth:expired', function(event) {
@@ -40,6 +41,7 @@ angular.module('menu').controller('menuController', function($scope, config, $ht
 
     $scope.$on('oauth:profile', function(event, profile) {
         $log.debug('User profile');
+        config.set('profile', profile);
         messagingService.pub(messagingService.DEFAULT_DOMAIN,'login', profile);
     });
 });
