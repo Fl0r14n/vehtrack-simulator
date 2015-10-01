@@ -28,8 +28,12 @@ angular.module('utils').provider('restResource', function () {
     self.api_path = '';
     self.base_url = '';
 
-    self.endpoint = function (resource) {
-        return self.base_url + self.api_path + resource + '/';
+    self.endpointURL = function (resource) {
+        return self.base_url + '/' + self.endpointURI(resource);
+    };
+    
+    self.endpointURI = function (resource) {
+        return self.api_path + resource + '/';
     };
     
     return {
@@ -41,9 +45,10 @@ angular.module('utils').provider('restResource', function () {
         },
         $get: function ($resource) {
             return {
-                endpoint: self.endpoint,
+                endpointURL: self.endpointURL,
+                endpointURI: self.endpointURI,
                 $rest: function (resource) {
-                    return $resource(self.endpoint(resource) + ':id/', {id: '@id'});
+                    return $resource(self.endpointURL(resource) + ':id/', {id: '@id'});
                 },
                 $resource: $resource
             };

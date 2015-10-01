@@ -2,7 +2,7 @@
 
 'use strict';
 
-angular.module('menu.settings', ['ionic', 'utils']).config(function($stateProvider, configProvider) {
+angular.module('menu.settings', ['ionic', 'utils']).config(function($stateProvider, configProvider, restResourceProvider) {
     $stateProvider.state('menu.settings', {
       url: '/settings',
       views: {
@@ -20,16 +20,15 @@ angular.module('menu.settings', ['ionic', 'utils']).config(function($stateProvid
         polyline: true,
         markers: true,
         center: true,
-//        http_host: 'http://localhost:8000',
-        http_host: 'http://vehtrack-application.rhcloud.com',
-//        client_id: '0CbDbFO4Vv1sS23DvTKkC8u7Rdllkkeh4uafCMZn',
-        client_id: 'HQ1LOa2GcrYsr1557HyVciO831J19OLTaRdB8AtJ',
+        http_host: 'http://localhost:8000',
+        client_id: '0CbDbFO4Vv1sS23DvTKkC8u7Rdllkkeh4uafCMZn',
         auth_path: '/o/authorize/',
         profile_uri: '/accounts/me/',
         revoke_token_path: '/o/revoke_token/',
         logout_path: '/accounts/logout/'
-
     });
+    restResourceProvider.setBaseUrl(configProvider.get('settings').http_host);
+    restResourceProvider.setApiPath('api/v1/');
 });
 
 angular.module('menu.settings').controller('settingsController', function($scope, config) {
