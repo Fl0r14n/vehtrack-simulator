@@ -212,13 +212,20 @@ angular.module('menu.map').controller('mapController', function($cordovaGeolocat
         trackService.journey.save(journey, function(result) {
             var journey_id = result.id;
             var positions = trackService.buildPositions(self.points, journey_id);
+            var messages = trackService.buildLogs(logs.getMessages(), journey_id);
+            console.log(positions);
+            console.log(messages);
             trackService.position.save(positions, function(result) {
             });
-            var messages = trackService.buildLogs(logs.getMessages(), journey_id);
-            trackService.log.save(messages, function(result) {
-            });
+//            trackService.log.save(messages, function(result) {
+//            });
+            self.cleanMap();
+        }, function(error) {
+            self.cleanMap();
         });
-
+    };
+    
+    self.cleanMap = function() {
         self.points = [];
         self.polylines = [];
         self.markers = [];
@@ -332,7 +339,9 @@ angular.module('menu.map').factory('trackService', function(restResource, config
                 device: getDevice()
             });
         }
-        return positions;
+        return {
+            objects: positions
+        };
     };
 
     service.buildLogs = function(messages, journey_id) {
@@ -350,7 +359,9 @@ angular.module('menu.map').factory('trackService', function(restResource, config
                 });
             }
         }
-        return logs;
+        return {
+            objects: logs
+        };
     };
 
     var marshallTimestamp = function(timestamp) {
