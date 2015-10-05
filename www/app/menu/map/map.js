@@ -29,7 +29,7 @@ angular.module('menu.map').controller('mapController', function($cordovaGeolocat
 
     document.addEventListener('deviceready', function() {
         cordova.plugins.backgroundMode.setDefaults({text: 'vehtrack-simulator collecting locations'});
-        // Enable background mode while track is playing
+        // Enable background mode
         cordova.plugins.backgroundMode.enable();
         //init location
         self.getInitialPoint();
@@ -62,7 +62,7 @@ angular.module('menu.map').controller('mapController', function($cordovaGeolocat
             $timeout(function() {
                 $ionicLoading.hide();
                 self.setCurrentPosition(position, true);
-                self.startWatch();
+                self.startLocationListener();
             }, 1000);
         }, function() {
             $ionicLoading.hide();
@@ -71,10 +71,8 @@ angular.module('menu.map').controller('mapController', function($cordovaGeolocat
         });
     };
 
-    self.startWatch = function() {
-        //TODO frequency does not work, drops a position every second
-        self.watch = $cordovaGeolocation.watchPosition({
-            frequency: self.settings.interval * 1000,
+    self.startLocationListener = function() {        
+        self.watch = $cordovaGeolocation.watchPosition({            
             timeout: 3000,
             enableHighAccuracy: true
         });
@@ -94,14 +92,24 @@ angular.module('menu.map').controller('mapController', function($cordovaGeolocat
     };
 
     self.recordPosition = function(position) {
-        self.points.push({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-            speed: position.coords.speed,
-            timestamp: position.timestamp
-        });
+        if(!self._record_lock) {
+            self._record_lock = true;
+            
+            self.points.push({
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude,
+                speed: position.coords.speed,
+                timestamp: position.timestamp
+            });
+            
+            $timeout(function() {
+                //kill some time
+                self._record_lock = false;
+            }, self.settings.interval*1000);
+        }
     };
     self.points = [];
+    self._record_lock = false;
 
     self.setCurrentPosition = function(position, initial) {
         self.currentPosition = {
@@ -188,7 +196,7 @@ angular.module('menu.map').controller('mapController', function($cordovaGeolocat
         }
     };
 
-    self.isRecording = false;
+    //recording button
     self.startRecord = function() {
         if (self.isRecording) {
             //on pause
@@ -199,29 +207,32 @@ angular.module('menu.map').controller('mapController', function($cordovaGeolocat
         self.isRecording = true;
         self.markPoint('go-lv.png');
     };
+    self.isRecording = false;
 
+    //stop button
     self.stopRecord = function() {
         if (self.isRecording) {
             self.isRecording = false;
             self.markPoint('stop-lv.png');
+        } else {
+            self.cleanMap();
         }
     };
 
+    //upload button
     self.uploadResult = function() {
         var journey = trackService.buildJourney(self.points);
         trackService.journey.save(journey, function(result) {
             var journey_id = result.id;
             var positions = trackService.buildPositions(self.points, journey_id);
             var messages = trackService.buildLogs(logs.getMessages(), journey_id);
-            console.log(positions);
-            console.log(messages);
-            trackService.position.save(positions, function(result) {
+            trackService.position.bulk(positions, function(result) {
             });
-//            trackService.log.save(messages, function(result) {
-//            });
+            trackService.log.bulk(messages, function(result) {
+            });
             self.cleanMap();
         }, function(error) {
-            self.cleanMap();
+            $ionicLoading.show({template: error.statusText, noBackdrop: true, duration: 2000});
         });
     };
     
@@ -247,8 +258,6 @@ angular.module('menu.map').controller('mapController', function($cordovaGeolocat
             scaleControl: true
         }
     };
-    //to show the weather this is a bug
-    self.weather = false;
 
     self.guid = function() {
         return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);

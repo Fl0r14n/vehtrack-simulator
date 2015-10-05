@@ -26,11 +26,15 @@ angular.module('menu').controller('menuController', function($scope, config, $ht
 
     $scope.$on('oauth:loggedOut', function(event, token) {
         $log.debug('Logged out');
+        
         //TODO this does not work
-        $http.get(self.settings.http_host + self.settings.logout_path, {
+        var logoutPath = self.settings.http_host + self.settings.logout_path;
+        console.log(logoutPath);
+        $http.get(logoutPath, {
             headers: self.authHeaders
         });
         self.authHeaders = undefined;
+        
         messagingService.pub(messagingService.DEFAULT_DOMAIN,'logout', event);
         config.set('profile', null);
     });

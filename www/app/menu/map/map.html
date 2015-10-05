@@ -6,7 +6,7 @@
     <ion-content>
         <div class="button-bar">
             <a class="button icon-center" ng-class="{'button-assertive ion-record': !ctrl.isRecording, 'button-energized ion-pause': ctrl.isRecording}" ng-click="ctrl.startRecord()"></a>
-            <a class="button button-dark icon-center ion-stop" ng-click="ctrl.stopRecord()"></a>
+            <a class="button button-dark icon-center" ng-class="{'ion-eject': !ctrl.isRecording, 'button-energized ion-stop': ctrl.isRecording}" ng-click="ctrl.stopRecord()"></a>
             <a class="button button-positive icon-center ion-upload" ng-click="ctrl.uploadResult()"></a>
         </div>
 
@@ -14,8 +14,6 @@
                             pan="ctrl.map.pan"
                             zoom="ctrl.map.zoom"
                             options="ctrl.map.options">
-
-            <data-ui-gmap-layer namespace="weather" type="WeatherLayer" show="ctrl.weather"></data-ui-gmap-layer>
 
             <ui-gmap-polylines models="ctrl.polylines"
                                idkey="'id'"
