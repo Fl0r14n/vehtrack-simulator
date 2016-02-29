@@ -19,7 +19,6 @@
     "cordova-plugin-console",
     "cordova-plugin-whitelist",
     "cordova-plugin-splashscreen",
-    "com.ionic.keyboard",
     "org.apache.cordova.geolocation",
     {
       "locator": "https://github.com/katzer/cordova-plugin-background-mode.git",
@@ -28,6 +27,10 @@
     {
       "locator": "https://git-wip-us.apache.org/repos/asf/cordova-plugin-inappbrowser.git",
       "id": "cordova-plugin-inappbrowser"
+    },
+    {
+      "locator": "https://github.com/driftyco/ionic-plugins-keyboard.git",
+      "id": "ionic-plugin-keyboard"
     }
   ],
   "cordovaPlatforms": [

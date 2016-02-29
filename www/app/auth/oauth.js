@@ -1,6 +1,6 @@
 /* global angular */
 
-angular.module('ionicOauth', ['ionic', 'ngCordova', 'ngStorage']).config(function($stateProvider, $httpProvider) {
+angular.module('ionicOauth', ['ionic', 'ngStorage']).config(function($stateProvider, $httpProvider) {
     //only in browser testing
     $stateProvider.state('oauth', {
         url: '/access_token=:accessToken',
@@ -47,11 +47,11 @@ angular.module('ionicOauth').factory('OauthStorage', function($sessionStorage, $
 });
 
 angular.module('ionicOauth').factory('OauthToken', function($location, $rootScope, OauthStorage, $interval) {
-    
+
     $rootScope.$on('oauth:expired', function() {
         service.destroy();
     });
-    
+
     $rootScope.$on('oauth:loggedOut', function() {
         service.destroy();
     });
@@ -133,8 +133,7 @@ angular.module('ionicOauth').factory('OauthToken', function($location, $rootScop
             var expires_at = new Date();
             expires_at.setSeconds(expires_at.getSeconds() + parseInt(service.token.expires_in) - 60); // 60 seconds less to secure browser and response latency
             service.token.expires_at = expires_at;
-        }
-        else {
+        } else {
             service.token.expires_at = null;
         }
     };
@@ -189,7 +188,7 @@ angular.module('ionicOauth').factory('OauthInterceptor', function($rootScope, Oa
     };
 });
 
-angular.module('ionicOauth').directive('ionOauth', function($compile, $cordovaOauthUtility, $http, $templateCache, $rootScope, OauthToken, OauthStorage) {
+angular.module('ionicOauth').directive('ionOauth', function($compile, $http, $templateCache, $rootScope, OauthToken, OauthStorage) {
     return {
         restrict: 'AE',
         replace: true,
@@ -219,7 +218,7 @@ angular.module('ionicOauth').directive('ionOauth', function($compile, $cordovaOa
                 init();
             });
 
-            $scope.$on('oauth:expired', function() {          
+            $scope.$on('oauth:expired', function() {
                 $scope.show = 'logged-out';
             });
 
@@ -312,22 +311,39 @@ angular.module('ionicOauth').directive('ionOauth', function($compile, $cordovaOa
                 ].join('');
             };
 
-            $scope.login = function() {
-                if (window.cordova) {
-                    var cordovaMetadata = cordova.require("cordova/plugin_list").metadata;
-                    if ($cordovaOauthUtility.isInAppBrowserInstalled(cordovaMetadata) === true) {
-                        $scope.redirectUri = 'http://localhost/callback';
-                        var browserRef = window.open(authUrl(), '_blank', 'location=yes');
-                        browserRef.addEventListener('loadstart', function(event) {
-                            if ((event.url).indexOf($scope.redirectUri) === 0) {
-                                browserRef.removeEventListener("exit", function(event) {
-                                });
-                                browserRef.close();
-                                var callbackResponse = (event.url).split("#")[1];
-                                OauthToken.set(callbackResponse);
-                            }
+            var isInAppBrowserInstalled = function() {
+                var cordovaPluginList = cordova.require("cordova/plugin_list");
+                var inAppBrowserNames = ["cordova-plugin-inappbrowser", "cordova-plugin-inappbrowser.inappbrowser", "org.apache.cordova.inappbrowser"];
+
+                if (Object.keys(cordovaPluginList.metadata).length === 0) {
+                    var formatedPluginList = cordovaPluginList.map(
+                        function(plugin) {
+                            return plugin.id || plugin.pluginId;
                         });
-                    }
+
+                    return inAppBrowserNames.some(function(name) {
+                        return formatedPluginList.indexOf(name) !== -1 ? true : false;
+                    });
+                } else {
+                    return inAppBrowserNames.some(function(name) {
+                        return cordovaPluginList.metadata.hasOwnProperty(name);
+                    });
+                }
+            };
+
+            $scope.login = function() {
+                if (window.cordova && isInAppBrowserInstalled() === true) {
+                    $scope.redirectUri = 'http://localhost/callback';
+                    var browserRef = window.open(authUrl(), '_blank', 'location=yes');
+                    browserRef.addEventListener('loadstart', function(event) {
+                        if ((event.url).indexOf($scope.redirectUri) === 0) {
+                            browserRef.removeEventListener("exit", function(event) {
+                            });
+                            browserRef.close();
+                            var callbackResponse = (event.url).split("#")[1];
+                            OauthToken.set(callbackResponse);
+                        }
+                    });
                 } else {
                     window.location.replace(authUrl());
                 }

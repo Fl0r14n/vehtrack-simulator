@@ -1,13 +1,32 @@
 {
-  "name": "HelloIonic",
-  "private": "true",
+  "name": "Vehtrack",
+  "private": true,
   "devDependencies": {
     "ionic": "driftyco/ionic-bower#1.1.0"
   },
   "dependencies": {
-    "angular-google-maps": "~2.2.1",
-    "angular-resource": "~1.4.6",
-    "ngCordova": "~0.1.20-alpha",
-    "ngstorage": "~0.3.0"
-  }
+    "angular-google-maps": "",
+    "angular-resource": "",
+    "ngCordova": "",
+    "ngstorage": ""
+  },
+  "resolutions": {
+    "angular": "^1.2"
+  },
+  "homepage": "https://github.com/Fl0r14n/vehtrack-simulator",
+  "authors": [
+    "Florian Chis <florian.chis@gmail.com>"
+  ],
+  "description": "",
+  "main": "",
+  "moduleType": [],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "www/lib",
+    "test",
+    "tests"
+  ]
 }
