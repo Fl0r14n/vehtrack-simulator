@@ -1,17 +1,14 @@
 {
-  "name": "Vehtrack",
+  "name": "vehtrack-simulator",
   "private": true,
   "devDependencies": {
-    "ionic": "driftyco/ionic-bower#1.1.0"
+    "ionic": "driftyco/ionic-bower"
   },
   "dependencies": {
     "angular-google-maps": "",
     "angular-resource": "",
     "ngCordova": "",
     "ngstorage": ""
-  },
-  "resolutions": {
-    "angular": "^1.2"
   },
   "homepage": "https://github.com/Fl0r14n/vehtrack-simulator",
   "authors": [
@@ -28,5 +25,8 @@
     "www/lib",
     "test",
     "tests"
-  ]
+  ],
+  "resolutions": {
+    "angular": "1.5.1"
+  }
 }
