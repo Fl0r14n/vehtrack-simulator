@@ -21,7 +21,9 @@ angular.module('menu').controller('menuController', function($scope, config, $ht
 
     $scope.$on('oauth:authorized', function(event, token) {
         $log.debug('Logged in');
-        self.authHeaders = OauthToken.headers();
+        
+        self.authHeaders = OauthToken.headers();        
+        $http.defaults.headers.common.Authorization = self.authHeaders.Authorization;
     });
 
     $scope.$on('oauth:loggedOut', function(event, token) {
@@ -30,10 +32,9 @@ angular.module('menu').controller('menuController', function($scope, config, $ht
         //TODO this does not work
         var logoutPath = self.settings.http_host + self.settings.logout_path;
         console.log(logoutPath);
-        $http.get(logoutPath, {
-            headers: self.authHeaders
-        });
+        $http.get(logoutPath);
         self.authHeaders = undefined;
+        delete $http.defaults.headers.common.Authorization;
         
         messagingService.pub(messagingService.DEFAULT_DOMAIN,'logout', event);
         config.set('profile', null);
@@ -41,11 +42,14 @@ angular.module('menu').controller('menuController', function($scope, config, $ht
 
     $scope.$on('oauth:expired', function(event) {
         $log.debug('Login expired');
+        
+        self.authHeaders = undefined;
+        delete $http.defaults.headers.common.Authorization;
     });
 
     $scope.$on('oauth:profile', function(event, profile) {
         $log.debug('User profile');
         config.set('profile', profile);
         messagingService.pub(messagingService.DEFAULT_DOMAIN,'login', profile);
-    });
+    });   
 });

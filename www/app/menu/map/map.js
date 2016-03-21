@@ -226,13 +226,20 @@ angular.module('menu.map').controller('mapController', function($cordovaGeolocat
             var journey_id = result.id;
             var positions = trackService.buildPositions(self.points, journey_id);
             var messages = trackService.buildLogs(logs.getMessages(), journey_id);
-            trackService.position.bulk(positions, function(result) {
+            trackService.position.bulk(positions, function(result) {                
+            }, function(error) {
+                $ionicLoading.show({template: error.statusText, noBackdrop: true, duration: 2000});
+                $log.debug('Upload positions: '+error.statusText);
             });
-            trackService.log.bulk(messages, function(result) {
+            trackService.log.bulk(messages, function(result) {                
+            }, function(error) {
+                $ionicLoading.show({template: error.statusText, noBackdrop: true, duration: 2000});
+                $log.debug('Upload logs: '+error.statusText);
             });
             self.cleanMap();
         }, function(error) {
             $ionicLoading.show({template: error.statusText, noBackdrop: true, duration: 2000});
+            $log.debug('Upload journey: '+error.statusText);
         });
     };
     
